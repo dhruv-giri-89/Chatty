@@ -1,4 +1,4 @@
-import Friendship from "../models/friendship.model.js";
+import Friendship from "../models/friendShip.model.js";
 import User from "../models/user.model.js";
 import mongoose from "mongoose";
 
@@ -93,7 +93,6 @@ export const deleteFriendship = async (req, res) => {
 };
 
 // Get all accepted friends of the current user
-e; // Get all accepted friends of the current user
 export const getUserFriends = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -122,6 +121,7 @@ export const getUserFriends = async (req, res) => {
     res.status(500).json({ message: "Error fetching friends." });
   }
 };
+
 // Get incoming friend requests (inbox)
 export const getFriendRequestsInbox = async (req, res) => {
   try {

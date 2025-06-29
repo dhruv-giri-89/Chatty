@@ -1,6 +1,7 @@
 import express from "express";
 import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
+import friendRoutes from "./routes/friend.route.js";
 import dotenv from "dotenv";
 import { connect } from "mongoose";
 import cookieParser from "cookie-parser";
@@ -19,6 +20,7 @@ app.use(
 );
 app.use("/api/auth", authRoutes);
 app.use("/api/message", messageRoutes);
+app.use("/api", friendRoutes);
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
