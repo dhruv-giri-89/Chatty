@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useChatStore } from "../../store/useChatStore";
 import { useAuthStore } from "../../store/useAuthStore";
 
@@ -6,21 +6,40 @@ const ChatMessagesContainer = () => {
   const { authUser } = useAuthStore();
   const currentUserId = authUser?._id;
 
-  const { userClicked, messages, getMessages } = useChatStore();
+  const { userClicked, messages, getMessages, subMessage, unsubMessage } =
+    useChatStore();
 
+  // Ref for auto-scrolling to the latest message
+  const messagesEndRef = useRef(null);
+
+  // Function to scroll to the bottom of the chat
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Fetch messages and subscribe to updates
   useEffect(() => {
     if (userClicked?._id) {
-      getMessages(userClicked._id);
+      getMessages(userClicked._id); // Fetch existing messages
+      subMessage(userClicked._id); // Subscribe to new messages
+
+      return () => {
+        unsubMessage(userClicked._id); // Unsubscribe on cleanup
+      };
     }
-  }, [userClicked?._id, getMessages]);
+  }, [userClicked?._id, getMessages, subMessage, unsubMessage]);
+
+  // Scroll to bottom when messages update
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const isMyMessage = (message) => message.sender === currentUserId;
 
   const getProfilePic = (user) => {
     if (user?.profilepic && user.profilepic.trim() !== "")
       return user.profilepic;
-    // fallback placeholder image
-    return "https://img.daisyui.com/images/profile/demo/kenobee@192.webp";
+    return "https://img.daisyui.com/images/profile/demo/kenobee@192.webp"; // Fallback
   };
 
   return (
@@ -30,13 +49,11 @@ const ChatMessagesContainer = () => {
         overflowY: "auto",
         height: "100%",
         padding: "15px",
-        backgroundColor: "#0f172a", // dark blue background
+        backgroundColor: "#0f172a",
       }}
     >
       {messages.map((message) => {
         const fromCurrentUser = isMyMessage(message);
-
-        // Use authUser avatar for sender, userClicked avatar for receiver
         const user = fromCurrentUser ? authUser : userClicked;
 
         return (
@@ -81,12 +98,12 @@ const ChatMessagesContainer = () => {
               </video>
             )}
 
-            {/* Show chat bubble only if text exists AND no media */}
+            {/* Show chat bubble if there's text and no media */}
             {!message.image && !message.video && message.text && (
               <div className="chat-bubble">{message.text}</div>
             )}
 
-            {/* Hardcoded delivery / seen status */}
+            {/* Hardcoded delivery/seen status */}
             {fromCurrentUser ? (
               <div className="chat-footer opacity-50">Seen at 12:46</div>
             ) : (
@@ -95,6 +112,9 @@ const ChatMessagesContainer = () => {
           </div>
         );
       })}
+
+      {/* Ref element for auto-scrolling */}
+      <div ref={messagesEndRef} />
     </div>
   );
 };

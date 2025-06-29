@@ -1,8 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useChatStore } from "../store/useChatStore";
-import { MoreVertical, Camera } from "lucide-react"; // Lucide icons
+import { MoreVertical, Camera } from "lucide-react";
 import defaultPhoto from "../assets/photo.png";
 import ChatMessagesContainer from "./subcomponents/ChatMessagesContainer";
+import { useAuthStore } from "../store/useAuthStore";
 
 const ChatContainer = () => {
   const { userClicked, sendMessage } = useChatStore();
@@ -47,14 +48,13 @@ const ChatContainer = () => {
 
     setMessageInput("");
     setSelectedImage(null);
-
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""; // Clear file input so same file can be selected again
+      fileInputRef.current.value = "";
     }
   };
 
   return (
-    <div className="flex flex-col h-full p-4 ">
+    <div className="flex flex-col h-full p-4">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-600 pb-2 mb-4">
         <div className="flex items-center gap-3">
@@ -79,7 +79,6 @@ const ChatContainer = () => {
 
       {/* Input field */}
       <form className="flex items-center gap-2" onSubmit={handleSubmit}>
-        {/* Camera icon */}
         <label className="cursor-pointer text-white">
           <Camera className="w-6 h-6" />
           <input

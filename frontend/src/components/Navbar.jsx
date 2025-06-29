@@ -1,6 +1,6 @@
 import React from "react";
 import { useAuthStore } from "../store/useAuthStore";
-import { LogOut, Settings, User, MessageCircle } from "lucide-react";
+import { LogOut, Settings, User, MessageCircle, Inbox } from "lucide-react"; // Added Inbox icon
 import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
@@ -18,7 +18,17 @@ const Navbar = () => {
       {/* Right-side buttons only when logged in */}
       {authUser && (
         <div className="flex gap-6 items-center">
-          <button className="flex items-center gap-1 hover:underline">
+          <button
+            className="flex items-center gap-1 hover:underline"
+            onClick={() => navigate("/inbox")} // Added navigation to inbox
+          >
+            <Inbox className="w-5 h-5" /> {/* Inbox icon */}
+            Inbox
+          </button>
+          <button
+            className="flex items-center gap-1 hover:underline"
+            onClick={() => navigate("/settings")}
+          >
             <Settings className="w-5 h-5" />
             Settings
           </button>

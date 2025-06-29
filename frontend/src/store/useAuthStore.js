@@ -10,12 +10,13 @@ export const useAuthStore = create(
   persist(
     (set, get) => ({
       authUser: null,
-      socket: null, // Added socket to state
+      socket: null,
       isUpdatingProfile: false,
       isCheckingAuth: true,
       isSigningup: false,
-      isLoggingIn: false, // fixed typo
+      isLoggingIn: false,
       hasHydrated: false,
+      onlineUsers: [],
 
       checkAuth: async () => {
         try {
@@ -104,9 +105,13 @@ export const useAuthStore = create(
         }
         const newSocket = io(BASE_URL, {
           auth: { token: authUser.token },
+          query: { userId: authUser._id },
         });
         set({ socket: newSocket });
-        newSocket.connect();
+
+        newSocket.on("getOnlineUsers", (userIds) => {
+          set({ onlineUsers: userIds });
+        });
       },
 
       disconnectSocket: () => {
