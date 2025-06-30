@@ -1,14 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useChatStore } from "../store/useChatStore";
-import { MoreVertical, Camera } from "lucide-react";
+import { useFriendStore } from "../store/useFriendStore";
+import { MoreVertical, Camera, UserMinus, Shield } from "lucide-react";
 import defaultPhoto from "../assets/photo.png";
 import ChatMessagesContainer from "./subcomponents/ChatMessagesContainer";
 import { useAuthStore } from "../store/useAuthStore";
 
 const ChatContainer = () => {
-  const { userClicked, sendMessage } = useChatStore();
+  const { userClicked, sendMessage, setUserClicked } = useChatStore();
+  const { removeFriend } = useFriendStore();
   const [message, setMessageInput] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const fileInputRef = useRef(null);
 
   if (!userClicked) {
@@ -53,6 +56,37 @@ const ChatContainer = () => {
     }
   };
 
+  const handleRemoveFriend = async () => {
+    setMenuOpen(false);
+    await removeFriend(userClicked._id);
+    // Clear the current chat after removing friend
+    setUserClicked(null);
+  };
+
+  const handleBlockUser = () => {
+    setMenuOpen(false);
+    // TODO: Implement block functionality
+    console.log("Block functionality will be implemented later");
+  };
+
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
+  };
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuOpen && !event.target.closest('.relative')) {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [menuOpen]);
+
   return (
     <div className="flex flex-col h-full p-4">
       {/* Header */}
@@ -67,9 +101,35 @@ const ChatContainer = () => {
             {userClicked.fullname}
           </h2>
         </div>
-        <button className="p-2 rounded hover:bg-gray-700">
-          <MoreVertical className="w-6 h-6 text-white" />
-        </button>
+        <div className="relative">
+          <button 
+            onClick={toggleMenu}
+            className="p-2 rounded hover:bg-gray-700"
+          >
+            <MoreVertical className="w-6 h-6 text-white" />
+          </button>
+          
+          {menuOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-[#1e293b] border border-gray-600 rounded shadow-lg z-20">
+              <ul className="py-1">
+                <li
+                  onClick={handleRemoveFriend}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-white hover:bg-gray-700 cursor-pointer"
+                >
+                  <UserMinus className="w-4 h-4" />
+                  Remove Friend
+                </li>
+                <li
+                  onClick={handleBlockUser}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-white hover:bg-gray-700 cursor-pointer"
+                >
+                  <Shield className="w-4 h-4" />
+                  Block
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Chat messages container */}

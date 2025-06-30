@@ -10,9 +10,13 @@ const Navbar = () => {
   return (
     <nav className="flex items-center justify-between bg-base-200 text-base-content px-6 py-4 shadow-md border-2 border-primary rounded-lg">
       {/* Logo + Chat Icon */}
-      <div className="flex items-center gap-2 text-2xl font-bold">
+      <div 
+        className="flex items-center gap-2 text-2xl font-bold cursor-pointer hover:text-primary transition-colors"
+        onClick={() => navigate("/")}
+        title="Go to Homepage"
+      >
         <MessageCircle className="w-7 h-7 text-blue-400" />
-        Chattify
+        Chatty
       </div>
 
       {/* Right-side buttons only when logged in */}

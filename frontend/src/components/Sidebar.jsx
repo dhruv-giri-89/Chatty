@@ -4,15 +4,22 @@ import { useFriendStore } from "../store/useFriendStore";
 import defaultPhoto from "../assets/photo.png";
 import { useAuthStore } from "../store/useAuthStore";
 import useGroupChatStore from "../store/useGroupChatStore";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, UserPlus } from "lucide-react";
 import CreateGroup from "./createGroup";
 
 const Sidebar = () => {
   const { users, getUsers, setUserClicked, userClicked } = useChatStore();
-  const { friends, getFriends, friendsLoading } = useFriendStore();
+  const { 
+    friends, 
+    getFriends, 
+    friendsLoading, 
+    sendFriendRequest, 
+    isRequestPending,
+    initializeStore 
+  } = useFriendStore();
   const { groups, getGroups, groupsLoading, groupClicked, setGroupClicked } =
     useGroupChatStore();
-  const { onlineUsers } = useAuthStore();
+  const { onlineUsers, authUser } = useAuthStore();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [createGroupModalOpen, setCreateGroupModalOpen] = useState(false);
@@ -20,8 +27,9 @@ const Sidebar = () => {
   useEffect(() => {
     getGroups();
     getUsers();
-    getFriends();
-  }, [getGroups, getUsers, getFriends]);
+    // Initialize all friend store data including outgoing requests
+    initializeStore();
+  }, [getGroups, getUsers, initializeStore]);
 
   const toggleMenu = () => {
     setMenuOpen((prev) => !prev);
@@ -30,6 +38,17 @@ const Sidebar = () => {
   const handleCreateGroup = () => {
     setMenuOpen(false);
     setCreateGroupModalOpen(true);
+  };
+
+  // Check if a user is already a friend
+  const isUserFriend = (userId) => {
+    return friends.some(friend => (friend._id || friend.id) === userId);
+  };
+
+  // Handle sending friend request
+  const handleSendFriendRequest = (e, userId) => {
+    e.stopPropagation(); // Prevent triggering the user click
+    sendFriendRequest(userId);
   };
 
   return (
@@ -164,42 +183,59 @@ const Sidebar = () => {
           </h2>
         </div>
         <ul className="space-y-2">
-          {users.map((user) => {
-            const userId = user._id || user.id;
-            const isUserActive = userClicked?._id === userId;
+          {users
+            .filter((user) => {
+              const userId = user._id || user.id;
+              const isCurrentUser = authUser?._id === userId;
+              const isFriend = isUserFriend(userId);
+              // Only show users who are not friends and not the current user
+              return !isCurrentUser && !isFriend;
+            })
+            .map((user) => {
+              const userId = user._id || user.id;
 
-            return (
-              <li
-                key={userId}
-                onClick={() => setUserClicked(user)}
-                className={`flex items-center gap-3 p-2 rounded cursor-pointer ${
-                  isUserActive ? "bg-primary text-white" : "hover:bg-base-200"
-                }`}
-              >
-                <div className="relative">
-                  <img
-                    src={user.profilepic || defaultPhoto}
-                    alt={user.fullname}
-                    className="w-10 h-10 rounded-full object-cover border border-base-200"
-                  />
-                  <span
-                    className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${
-                      onlineUsers.includes(userId)
-                        ? "bg-green-500"
-                        : "bg-gray-400"
-                    }`}
-                  />
-                </div>
-                <span
-                  className={`font-medium ${
-                    isUserActive ? "text-white" : "text-base-content"
-                  }`}
+              return (
+                <li
+                  key={userId}
+                  className="flex items-center justify-between p-2 rounded"
                 >
-                  {user.fullname}
-                </span>
-              </li>
-            );
-          })}
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <img
+                        src={user.profilepic || defaultPhoto}
+                        alt={user.fullname}
+                        className="w-10 h-10 rounded-full object-cover border border-base-200"
+                      />
+                      <span
+                        className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${
+                          onlineUsers.includes(userId)
+                            ? "bg-green-500"
+                            : "bg-gray-400"
+                        }`}
+                      />
+                    </div>
+                    <span className="font-medium text-base-content">
+                      {user.fullname}
+                    </span>
+                  </div>
+                  
+                  {/* Add Friend Button */}
+                  <button
+                    onClick={(e) => handleSendFriendRequest(e, userId)}
+                    className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full transition-colors ${
+                      isRequestPending(userId)
+                        ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                        : "bg-primary text-white hover:bg-primary-focus"
+                    }`}
+                    title={isRequestPending(userId) ? "Friend request sent" : "Send friend request"}
+                    disabled={isRequestPending(userId)}
+                  >
+                    <UserPlus className="w-3 h-3" />
+                    {isRequestPending(userId) ? "Sent" : "Add"}
+                  </button>
+                </li>
+              );
+            })}
         </ul>
       </div>
 

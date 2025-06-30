@@ -26,7 +26,7 @@ export const initiateFriendship = async (req, res) => {
   }
 };
 
-// Accept or reject a friendship request
+// Accept a friendship request
 export const updateFriendshipStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -138,5 +138,62 @@ export const getFriendRequestsInbox = async (req, res) => {
   } catch (error) {
     console.error("Error fetching inbox:", error);
     res.status(500).json({ message: "Error fetching friend requests inbox." });
+  }
+};
+
+// Get outgoing friend requests (sent by current user)
+export const getOutgoingFriendRequests = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const outgoingRequests = await Friendship.find({
+      user1: userId,
+      status: "pending",
+    })
+      .populate("user2", "-password") // Show recipient info, excluding password
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ outgoingRequests });
+  } catch (error) {
+    console.error("Error fetching outgoing requests:", error);
+    res.status(500).json({ message: "Error fetching outgoing friend requests." });
+  }
+};
+
+// Remove a friend by user ID
+export const removeFriend = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const currentUserId = req.user._id;
+
+    // Find the friendship between the two users
+    const friendship = await Friendship.findOne({
+      status: "accepted",
+      $or: [
+        { user1: currentUserId, user2: userId },
+        { user1: userId, user2: currentUserId }
+      ]
+    });
+
+    if (!friendship) {
+      return res.status(404).json({ message: "Friendship not found." });
+    }
+
+    // Only allow delete if the user is involved
+    if (
+      friendship.user1.toString() !== currentUserId.toString() &&
+      friendship.user2.toString() !== currentUserId.toString()
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to remove this friendship." });
+    }
+
+    await friendship.deleteOne();
+
+    res.status(200).json({ message: "Friend removed successfully." });
+  } catch (error) {
+    console.error("Remove friend error:", error);
+    res.status(500).json({ message: "Error removing friend." });
   }
 };
