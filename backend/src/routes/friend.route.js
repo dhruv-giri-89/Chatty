@@ -8,6 +8,7 @@ import {
   getFriendRequestsInbox,
   getOutgoingFriendRequests,
   removeFriend,
+  getFriendRequestCount,
 } from "../controllers/friendShip.controller.js";
 
 const router = express.Router();
@@ -32,5 +33,8 @@ router.get("/inbox", protectRoute, getFriendRequestsInbox);
 
 // 📤 Fetch outgoing friend requests (sent by current user)
 router.get("/outgoing", protectRoute, getOutgoingFriendRequests);
+
+// Get friend request count for the current user
+router.get("/request-count", protectRoute, getFriendRequestCount);
 
 export default router;

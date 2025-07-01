@@ -64,7 +64,7 @@ function App() {
           element={authUser ? <Inbox /> : <Navigate to="/login" />} // Fixed component name
         />
       </Routes>
-      <Toaster position="top-right" />
+      <Toaster position="top-center" />
     </div>
   );
 }

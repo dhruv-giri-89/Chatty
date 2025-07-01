@@ -15,6 +15,10 @@ export const useFriendStore = create(
       pendingRequests: [], // Track pending outgoing requests
       outgoingRequests: [], // Track outgoing requests from server
       outgoingRequestsLoading: false,
+      notifications: [],
+      notificationsLoading: false,
+      notificationCount: 0,
+      friendRequestCount: 0,
 
       // ---------------- Get Friends ----------------
       getFriends: async () => {
@@ -56,6 +60,75 @@ export const useFriendStore = create(
           console.error("Error fetching friend requests:", error);
           toast.error("Failed to load friend requests");
           set({ requestsLoading: false });
+        }
+      },
+
+      // ---------------- Get Notifications ----------------
+      getNotifications: async () => {
+        const { authUser } = useAuthStore.getState();
+        if (!authUser) return;
+
+        set({ notificationsLoading: true });
+        try {
+          const res = await axiosInstance.get("/notifications");
+          set({ notifications: res.data.notifications, notificationsLoading: false });
+        } catch (error) {
+          console.error("Error fetching notifications:", error);
+          toast.error("Failed to load notifications");
+          set({ notificationsLoading: false });
+        }
+      },
+
+      // ---------------- Get Notification Count ----------------
+      getNotificationCount: async () => {
+        const { authUser } = useAuthStore.getState();
+        if (!authUser) return;
+
+        try {
+          const res = await axiosInstance.get("/notifications/count");
+          set({ notificationCount: res.data.count });
+        } catch (error) {
+          console.error("Error fetching notification count:", error);
+        }
+      },
+
+      // ---------------- Get Friend Request Count ----------------
+      getFriendRequestCount: async () => {
+        const { authUser } = useAuthStore.getState();
+        if (!authUser) return;
+
+        try {
+          const res = await axiosInstance.get("/request-count");
+          set({ friendRequestCount: res.data.count });
+        } catch (error) {
+          console.error("Error fetching friend request count:", error);
+        }
+      },
+
+      // ---------------- Mark Notification as Read ----------------
+      markNotificationAsRead: async (notificationId) => {
+        try {
+          await axiosInstance.patch(`/notifications/${notificationId}/read`);
+          // Remove the notification from the list
+          const { notifications } = get();
+          set({ 
+            notifications: notifications.filter(notif => notif._id !== notificationId) 
+          });
+        } catch (error) {
+          console.error("Error marking notification as read:", error);
+          toast.error("Failed to mark notification as read");
+        }
+      },
+
+      // ---------------- Mark All Notifications as Read ----------------
+      markAllNotificationsAsRead: async () => {
+        try {
+          await axiosInstance.patch("/notifications/mark-all-read");
+          set({ notifications: [] });
+          toast.success("All notifications marked as read");
+        } catch (error) {
+          console.error("Error marking all notifications as read:", error);
+          toast.error("Failed to mark all notifications as read");
         }
       },
 
@@ -174,12 +247,23 @@ export const useFriendStore = create(
         }
       },
 
+      // ---------------- Refresh Inbox Data (for real-time updates) ----------------
+      refreshInboxData: () => {
+        get().getFriendRequests();
+        get().getNotifications();
+        get().getNotificationCount();
+        get().getFriendRequestCount();
+      },
+
       // ---------------- Initialize store data ----------------
       initializeStore: async () => {
         await Promise.all([
           get().getFriends(),
           get().getFriendRequests(),
-          get().getOutgoingRequests()
+          get().getOutgoingRequests(),
+          get().getNotifications(),
+          get().getNotificationCount(),
+          get().getFriendRequestCount()
         ]);
       },
     }),

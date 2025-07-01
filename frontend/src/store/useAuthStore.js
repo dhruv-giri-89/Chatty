@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import { axiosInstance } from "../lib/axios";
 import { toast } from "react-hot-toast";
 import { io } from "socket.io-client"; // Added missing import
+import { useFriendStore } from "./useFriendStore";
 
 const BASE_URL = "http://localhost:5001";
 
@@ -111,6 +112,57 @@ export const useAuthStore = create(
 
         newSocket.on("getOnlineUsers", (userIds) => {
           set({ onlineUsers: userIds });
+        });
+
+        // Friend request notifications
+        newSocket.on("friendRequestSent", (data) => {
+          toast.success(data.message, {
+            duration: 5000,
+            icon: "👋",
+            style: {
+              background: "#10b981",
+              color: "white",
+            },
+          });
+        
+          // Refresh inbox and count
+          const { refreshInboxData, getFriendRequestCount } = useFriendStore.getState();
+          refreshInboxData();
+          getFriendRequestCount();
+        });
+        
+
+        // Friend request response notifications
+        newSocket.on("friendRequestResponse", (data) => {
+          const icon = data.status === "accepted" ? "✅" : "❌";
+          const style = data.status === "accepted" 
+            ? { background: "#10b981", color: "white" }
+            : { background: "#ef4444", color: "white" };
+          
+          toast(data.message, {
+            duration: 5000,
+            icon,
+            style,
+          });
+          // Refresh inbox data and counts
+          const { refreshInboxData, getFriendRequestCount } = useFriendStore.getState();
+          refreshInboxData();
+          getFriendRequestCount();
+        });
+
+        // Friend removal notifications
+        newSocket.on("friendRemoved", (data) => {
+          toast.error(data.message, {
+            duration: 5000,
+            style: {
+              background: "#f59e0b",
+              color: "white",
+            },
+          });
+          // Refresh inbox data and counts
+          const { refreshInboxData, getNotificationCount } = useFriendStore.getState();
+          refreshInboxData();
+          getNotificationCount();
         });
       },
 

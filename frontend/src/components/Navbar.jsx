@@ -1,11 +1,25 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
-import { LogOut, Settings, User, MessageCircle, Inbox } from "lucide-react"; // Added Inbox icon
+import { useFriendStore } from "../store/useFriendStore";
+import { LogOut, Settings, User, MessageCircle, Inbox, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const { logout, authUser } = useAuthStore();
+  const { 
+    notificationCount, 
+    friendRequestCount, 
+    getNotificationCount, 
+    getFriendRequestCount 
+  } = useFriendStore();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (authUser) {
+      getNotificationCount();
+      getFriendRequestCount();
+    }
+  }, [authUser, getNotificationCount, getFriendRequestCount]);
 
   return (
     <nav className="flex items-center justify-between bg-base-200 text-base-content px-6 py-4 shadow-md border-2 border-primary rounded-lg">
@@ -22,13 +36,34 @@ const Navbar = () => {
       {/* Right-side buttons only when logged in */}
       {authUser && (
         <div className="flex gap-6 items-center">
+          {/* Inbox with friend request count */}
           <button
-            className="flex items-center gap-1 hover:underline"
-            onClick={() => navigate("/inbox")} // Added navigation to inbox
+            className="flex items-center gap-1 hover:underline relative"
+            onClick={() => navigate("/inbox")}
           >
-            <Inbox className="w-5 h-5" /> {/* Inbox icon */}
+            <Inbox className="w-5 h-5" />
             Inbox
+            {friendRequestCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {friendRequestCount > 99 ? '99+' : friendRequestCount}
+              </span>
+            )}
           </button>
+
+          {/* Notifications with notification count */}
+          <button
+            className="flex items-center gap-1 hover:underline relative"
+            onClick={() => navigate("/inbox")}
+          >
+            <Bell className="w-5 h-5" />
+            Notifications
+            {notificationCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {notificationCount > 99 ? '99+' : notificationCount}
+              </span>
+            )}
+          </button>
+
           <button
             className="flex items-center gap-1 hover:underline"
             onClick={() => navigate("/settings")}

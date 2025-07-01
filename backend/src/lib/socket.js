@@ -28,6 +28,50 @@ io.on("connection", (socket) => {
 
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
+  // Friend request events
+  socket.on("friendRequestSent", (data) => {
+    const { recipientId, senderName } = data;
+    const receiverSocketId = getReceiverSocketId(recipientId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newFriendRequest", {
+        message: `${senderName} sent you a friend request`,
+        senderName,
+        type: "friendRequest"
+      });
+    }
+  });
+
+  // Friend request response events
+  socket.on("friendRequestResponse", (data) => {
+    const { recipientId, responderName, status } = data;
+    const receiverSocketId = getReceiverSocketId(recipientId);
+    if (receiverSocketId) {
+      const message = status === "accepted" 
+        ? `${responderName} accepted your friend request`
+        : `${responderName} declined your friend request`;
+      
+      io.to(receiverSocketId).emit("friendRequestResponse", {
+        message,
+        responderName,
+        status,
+        type: "friendRequestResponse"
+      });
+    }
+  });
+
+  // Friend removal notification
+  socket.on("friendRemoved", (data) => {
+    const { recipientId, removerName } = data;
+    const receiverSocketId = getReceiverSocketId(recipientId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("friendRemoved", {
+        message: `${removerName} removed you from their friends list`,
+        removerName,
+        type: "friendRemoved"
+      });
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("User disconnected", socket.id);
 
