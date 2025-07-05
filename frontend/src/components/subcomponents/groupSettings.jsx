@@ -3,6 +3,7 @@ import useGroupChatStore from "../../store/useGroupChatStore";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useChatStore } from "../../store/useChatStore";
 import toast from "react-hot-toast";
+import { useFriendStore } from "../../store/useFriendStore";
 
 const GroupSettings = ({ group, onClose }) => {
   const fileInputRef = useRef();
@@ -18,6 +19,7 @@ const GroupSettings = ({ group, onClose }) => {
 
   const { users } = useChatStore();
   const { authUser } = useAuthStore();
+  const { friends } = useFriendStore();
   const isAdmin = authUser?._id === group.admin?._id;
 
   const [editingName, setEditingName] = useState(false);
@@ -99,7 +101,7 @@ const GroupSettings = ({ group, onClose }) => {
     }
   };
 
-  const availableUsers = users.filter(
+  const availableUsers = friends.filter(
     (u) => !group.members?.some((m) => m._id === u._id)
   );
 

@@ -2,10 +2,10 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { axiosInstance } from "../lib/axios";
 import { toast } from "react-hot-toast";
-import { io } from "socket.io-client"; // Added missing import
+import { io } from "socket.io-client"; 
 import { useFriendStore } from "./useFriendStore";
 
-const BASE_URL = "http://localhost:5001";
+const BASE_URL =  import.meta.env.MODE === "development"?'http://localhost:5001':"/";
 
 export const useAuthStore = create(
   persist(

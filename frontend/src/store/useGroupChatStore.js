@@ -2,17 +2,87 @@ import { create } from "zustand";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 import { useChatStore } from "./useChatStore";
+import { useAuthStore } from "./useAuthStore";
 
 const useGroupChatStore = create((set, get) => ({
   groups: [],
   groupsLoading: false,
   groupClicked: null,
+  groupMessages: [],
+  groupMessagesLoading: false,
+
+  // ========== Set Clicked Group ==========
+  setGroupClicked: (group) => {
+    if (group) useChatStore.getState().setUserClicked(null);
+    set({ groupClicked: group });
+  },
+
+  // ========== Fetch Group Messages ==========
+  getGroupMessages: async (groupId) => {
+    set({ groupMessagesLoading: true });
+    try {
+      const res = await axiosInstance.get(`/message/groupmessages/${groupId}`);
+      set({
+        groupMessages: Array.isArray(res.data) ? res.data : [],
+        groupMessagesLoading: false,
+      });
+    } catch (error) {
+      console.error("Error fetching group messages:", error);
+      toast.error("Failed to load group messages");
+      set({ groupMessagesLoading: false });
+    }
+  },
+
+  // ========== Send Group Message ==========
+  sendGroupMessage: async ({ groupId, text, image }) => {
+    if (!groupId || (!text && !image)) {
+      toast.error("Group and at least text or image required");
+      return;
+    }
+
+    try {
+      const res = await axiosInstance.post(
+        `/message/sendgroupmessage/${groupId}`,
+        { text, image }
+      );
+
+      const newMessage = res.data;
+      set((state) => ({
+        groupMessages: [...state.groupMessages, newMessage],
+      }));
+    } catch (error) {
+      console.error("Error sending group message:", error);
+      toast.error("Failed to send group message");
+    }
+  },
+
+  // ========== Subscribe to Group Messages ==========
+  subGroupMessages: () => {
+    const { groupClicked } = get();
+    const socket = useAuthStore.getState().socket;
+
+    if (!groupClicked || !socket) return;
+
+    socket.on("newGroupMessage", (newMessage) => {
+      if (newMessage.receiverGroup !== groupClicked._id) return;
+      set((state) => ({
+        groupMessages: [...state.groupMessages, newMessage],
+      }));
+    });
+  },
+
+  // ========== Unsubscribe from Group Messages ==========
+  unsubGroupMessages: () => {
+    const socket = useAuthStore.getState().socket;
+    if (socket) socket.off("newGroupMessage");
+  },
+  
 
   // ========= Set clicked group and reset user chat if needed =========
   setGroupClicked: (group) => {
     if (group) useChatStore.getState().setUserClicked(null);
     set({ groupClicked: group });
-  },
+  },     
 
   // ========= Fetch groups (initial load only) =========
   getGroups: async () => {
@@ -53,7 +123,7 @@ const useGroupChatStore = create((set, get) => ({
     }
   },
 
-  // ========= Update Group Avatar =========
+  // =========Update Group Avatar=========
   updateGroupPic: async ({ groupId, imageBase64 }) => {
     try {
       const res = await axiosInstance.patch(

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useFriendStore } from "../store/useFriendStore";
-import { LogOut, Settings, User, MessageCircle, Inbox, Bell } from "lucide-react";
+import { LogOut, Settings, User, MessageCircle, Inbox } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
@@ -22,7 +22,7 @@ const Navbar = () => {
   }, [authUser, getNotificationCount, getFriendRequestCount]);
 
   return (
-    <nav className="flex items-center justify-between bg-base-200 text-base-content px-6 py-4 shadow-md border-2 border-primary rounded-lg">
+    <nav className="flex items-center justify-between bg-base-200 text-base-content px-6 py-4 shadow-md border-2 border-primary">
       {/* Logo + Chat Icon */}
       <div 
         className="flex items-center gap-2 text-2xl font-bold cursor-pointer hover:text-primary transition-colors"
@@ -43,23 +43,9 @@ const Navbar = () => {
           >
             <Inbox className="w-5 h-5" />
             Inbox
-            {friendRequestCount > 0 && (
+            {(friendRequestCount + notificationCount) > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {friendRequestCount > 99 ? '99+' : friendRequestCount}
-              </span>
-            )}
-          </button>
-
-          {/* Notifications with notification count */}
-          <button
-            className="flex items-center gap-1 hover:underline relative"
-            onClick={() => navigate("/inbox")}
-          >
-            <Bell className="w-5 h-5" />
-            Notifications
-            {notificationCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {notificationCount > 99 ? '99+' : notificationCount}
+                {(friendRequestCount + notificationCount) > 99 ? '99+' : (friendRequestCount + notificationCount)}
               </span>
             )}
           </button>

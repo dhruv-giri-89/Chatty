@@ -39,7 +39,7 @@ const ChatMessagesContainer = () => {
   const getProfilePic = (user) => {
     if (user?.profilepic && user.profilepic.trim() !== "")
       return user.profilepic;
-    return "https://img.daisyui.com/images/profile/demo/kenobee@192.webp"; // Fallback
+    return "/defaultPhoto.webp"; // Use the default photo from public folder
   };
 
   return (

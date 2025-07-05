@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useChatStore } from "../store/useChatStore";
 import { useFriendStore } from "../store/useFriendStore";
-import { MoreVertical, Camera, UserMinus, Shield } from "lucide-react";
+import { MoreVertical, Image, UserMinus, Shield } from "lucide-react";
 import defaultPhoto from "../assets/photo.png";
 import ChatMessagesContainer from "./subcomponents/ChatMessagesContainer";
 import { useAuthStore } from "../store/useAuthStore";
@@ -133,14 +133,14 @@ const ChatContainer = () => {
       </div>
 
       {/* Chat messages container */}
-      <div className="flex-1 overflow-y-auto mb-4 bg-[#0f172a] rounded-md p-4">
+      <div className="flex-1 overflow-y-auto mb-4 bg-[#0f172a] p-4">
         <ChatMessagesContainer />
       </div>
 
       {/* Input field */}
       <form className="flex items-center gap-2" onSubmit={handleSubmit}>
         <label className="cursor-pointer text-white">
-          <Camera className="w-6 h-6" />
+          <Image className="w-6 h-6" />
           <input
             type="file"
             accept="image/*"

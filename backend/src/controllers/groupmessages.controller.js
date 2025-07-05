@@ -28,7 +28,7 @@ export const groupMessages = async (req, res) => {
     const { id: groupId } = req.params;
 
     const messages = await GroupMessages.find({ receiverGroup: groupId })
-      .populate("sender", "username avatar")
+      .populate("sender", "fullname profilepic")
       .sort({ createdAt: 1 });
 
     res.status(200).json(messages);
@@ -63,16 +63,19 @@ export const sendGroupMessage = async (req, res) => {
       image: imageUrl,
     });
 
+    // Populate sender for real-time and response
+    const populatedMessage = await GroupMessages.findById(newMessage._id).populate("sender", "fullname profilepic");
+
     group.members.forEach((memberId) => {
       if (memberId.toString() !== senderId.toString()) {
         const socketId = getReceiverSocketId(memberId.toString());
         if (socketId) {
-          io.to(socketId).emit("newGroupMessage", newMessage);
+          io.to(socketId).emit("newGroupMessage", populatedMessage);
         }
       }
     });
 
-    res.status(200).json(newMessage);
+    res.status(200).json(populatedMessage);
   } catch (error) {
     console.error("Error sending group message:", error.message);
     res.status(500).json({ message: "Internal server error" });

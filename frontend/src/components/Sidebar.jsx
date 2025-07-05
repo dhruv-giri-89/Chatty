@@ -53,7 +53,7 @@ const Sidebar = () => {
 
   return (
     <>
-      <div className="w-64 bg-base-100 border-2 border-primary rounded-lg p-4 overflow-y-auto h-screen">
+      <div className="w-64 bg-base-100 border-2 border-primary p-4 overflow-y-auto h-screen">
         {/* ---------------- Friends Section ---------------- */}
         <div className="mb-6">
           <h2 className="text-xl font-semibold text-base-content mb-2">

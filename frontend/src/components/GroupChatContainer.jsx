@@ -1,8 +1,8 @@
 import React, { useState, useRef } from "react";
-import { Camera, MoreVertical } from "lucide-react";
+import { Image, MoreVertical } from "lucide-react";
 import useGroupChatStore from "../store/useGroupChatStore";
 import GroupMessagesContainer from "./subcomponents/GroupMessagesContainer";
-import GroupSettings from "./subcomponents/GroupSettings";
+import GroupSettings from "./subcomponents/groupSettings";
 
 const GroupChatContainer = () => {
   const { groupClicked, sendGroupMessage } = useGroupChatStore();
@@ -120,14 +120,14 @@ const GroupChatContainer = () => {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto mb-4 bg-[#0f172a] rounded-md p-4">
+      <div className="flex-1 overflow-y-auto mb-4 bg-[#0f172a] p-4">
         <GroupMessagesContainer />
       </div>
 
       {/* Input */}
       <form className="flex items-center gap-2" onSubmit={handleSubmit}>
         <label className="cursor-pointer text-white">
-          <Camera className="w-6 h-6" />
+          <Image className="w-6 h-6" />
           <input
             type="file"
             accept="image/*"
